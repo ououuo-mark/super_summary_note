@@ -276,6 +276,16 @@ class Api:
                 "elapsed": elapsed,
             })
         return result
+    
+    
+    def open_url(self, url):
+        """用系统默认浏览器打开 URL"""
+        import webbrowser
+        try:
+            webbrowser.open(url)
+            return True
+        except Exception:
+            return False
 
     def cancel_task(self, task_id):
         if task_id in tasks_registry:
