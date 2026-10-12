@@ -61,7 +61,7 @@ cd super_summary_note
 pip install -r requirements.txt
 ```
 
-> **系统提示**：处理视频截帧需确保系统已安装 [FFmpeg](https://ffmpeg.org/) 并已配置在系统 `PATH` 环境变量中。
+> **系统提示**：处理视频截帧需确保系统已安装 [FFmpeg](https://ffmpeg.org/) 并已配置在系统 `PATH` 环境变量中，若未安装程序也会自动安装。
 
 ### 2. 启动方式
 
