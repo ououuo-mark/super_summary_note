@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VideoNotes - 视频智能笔记助手</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --surface-subtle: #F1F5F9;
+      --border: #E2E8F0;
+      --border-focus: #0F172A;
+      --text-main: #0F172A;
+      --text-muted: #64748B;
+      --text-subtle: #94A3B8;
+      --primary: #0F172A;
+      --primary-hover: #1E293B;
+      --accent-blue: #2563EB;
+      --accent-green: #10B981;
+      --accent-amber: #F59E0B;
+      --accent-red: #EF4444;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -4px rgba(0, 0, 0, 0.02);
+      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* 顶部导航 */
+    header {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-badge {
+      width: 36px;
+      height: 36px;
+      background: var(--primary);
+      color: white;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      box-shadow: 0 2px 4px rgba(15, 23, 42, 0.2);
+    }
+
+    .brand h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+    }
+
+    .brand span {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+      padding-left: 8px;
+      border-left: 1px solid var(--border);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* 容器布局 */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 60px;
+      width: 100%;
+      flex: 1;
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 32px;
+    }
+
+    @media (max-width: 960px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 卡片通用 */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .card-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--surface-subtle);
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* 表单控件 */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .field-hint {
+      font-size: 11px;
+      color: var(--text-subtle);
+      margin-top: 4px;
+      text-transform: none;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-main);
+      font-size: 13px;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 1px var(--border-focus);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .section-divider {
+      margin: 20px 0 16px;
+      padding-top: 16px;
+      border-top: 1px dashed var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 按钮 */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: var(--transition);
+      text-decoration: none;
+      user-select: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      border-color: var(--border);
+      color: var(--text-main);
+    }
+
+    .btn-secondary:hover {
+      background: var(--surface-subtle);
+      border-color: #CBD5E1;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .btn-block {
+      width: 100%;
+    }
+
+    /* 上传区域 */
+    .drop-zone {
+      border: 2px dashed #CBD5E1;
+      background: #F8FAFC;
+      border-radius: var(--radius-md);
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.dragover {
+      border-color: var(--text-main);
+      background: #F1F5F9;
+    }
+
+    .drop-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      box-shadow: var(--shadow-sm);
+      color: var(--text-muted);
+    }
+
+    .drop-text-main {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .drop-text-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* 待上传文件列表 */
+    .file-preview-list {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .file-chip {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    .file-icon {
+      color: var(--accent-blue);
+      flex-shrink: 0;
+    }
+
+    .file-name {
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 320px;
+    }
+
+    .file-size {
+      color: var(--text-subtle);
+      font-size: 11px;
+    }
+
+    .file-remove {
+      color: var(--text-subtle);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: var(--transition);
+    }
+
+    .file-remove:hover {
+      color: var(--accent-red);
+      background: #FEE2E2;
+    }
+
+    /* 任务列表 */
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .task-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: var(--transition);
+    }
+
+    .task-item:hover {
+      box-shadow: var(--shadow-md);
+      border-color: #CBD5E1;
+    }
+
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .task-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .task-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .status-processing {
+      background: #EFF6FF;
+      color: var(--accent-blue);
+    }
+
+    .status-completed {
+      background: #ECFDF5;
+      color: var(--accent-green);
+    }
+
+    .status-error {
+      background: #FEF2F2;
+      color: var(--accent-red);
+    }
+
+    .status-cancelled {
+      background: #F1F5F9;
+      color: var(--text-muted);
+    }
+
+    .task-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+
+    .task-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    /* 空状态 */
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-subtle);
+    }
+
+    .empty-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      opacity: 0.6;
+    }
+
+    /* Toast 通知 */
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 100;
+    }
+
+    .toast {
+      padding: 12px 18px;
+      border-radius: var(--radius-sm);
+      background: var(--primary);
+      color: white;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(10px);
+      opacity: 0;
+      animation: toastIn 0.25s forwards;
+    }
+
+    @keyframes toastIn {
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="nav-container">
+      <div class="brand">
+        <div class="logo-badge">VN</div>
+        <div>
+          <h1>VideoNotes</h1>
+        </div>
+        <span>AI 智能视频总结 · 自动生成带图笔记与 PDF</span>
+      </div>
+      <div class="nav-actions">
+        <button id="btn-refresh" class="btn btn-secondary btn-sm" onclick="loadTasks()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          刷新任务
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- 左侧：环境与模型配置卡片 -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            项目环境与接口设置
+          </div>
+          <span class="card-badge">持久化配置</span>
+        </div>
+
+        <form id="config-form" onsubmit="handleSaveConfig(event)">
+          <!-- 大模型配置 -->
+          <div class="form-group">
+            <label>Model Name (模型名称)</label>
+            <input type="text" id="model_name" placeholder="例如: glm-4-flash / gpt-4o" required>
+          </div>
+
+          <div class="form-group">
+            <label>API Key (大模型密钥)</label>
+            <input type="password" id="api_key" placeholder="例如: sk-xxxxxxxx" required>
+          </div>
+
+          <div class="form-group">
+            <label>Base URL (模型接口地址)</label>
+            <input type="text" id="base_url" placeholder="https://open.bigmodel.cn/api/paas/v4" required>
+          </div>
+
+          <div class="form-group">
+            <label>Markdown 保存目录</label>
+            <input type="text" id="markdown_file_path" placeholder="例如: D:\notes_save" required>
+            <div class="field-hint">生成的 Markdown 与 PDF 笔记保存的基础目录</div>
+          </div>
+
+          <!-- 阿里云 OSS 配置 -->
+          <div class="section-divider">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            阿里云 OSS (音视频转存)
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label>OSS AK</label>
+              <input type="password" id="oss_ak" placeholder="AccessKey ID" required>
+            </div>
+            <div class="form-group">
+              <label>OSS SK</label>
+              <input type="password" id="oss_sk" placeholder="AccessKey Secret" required>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Bucket Name</label>
+              <input type="text" id="bucket_name" placeholder="存储桶名称" required>
+            </div>
+            <div class="form-group">
+              <label>Region</label>
+              <input type="text" id="region" placeholder="如 cn-shanghai" required>
+            </div>
+          </div>
+
+          <!-- 通义听悟配置 -->
+          <div class="section-divider">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            通义听悟语音转写
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label>听悟 AK</label>
+              <input type="password" id="tingwu_ak" placeholder="AccessKey ID" required>
+            </div>
+            <div class="form-group">
+              <label>听悟 SK</label>
+              <input type="password" id="tingwu_sk" placeholder="AccessKey Secret" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>听悟 AppKey</label>
+            <input type="text" id="tingwu_appkey" placeholder="语音项目 AppKey" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" style="margin-top: 20px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            保存并应用配置
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 右侧：视频上传与任务列表 -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <!-- 上传卡片 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            批量上传视频
+          </div>
+          <span class="card-badge">支持同时上传多个 MP4</span>
+        </div>
+
+        <div class="drop-zone" id="drop-zone" onclick="triggerFileInput()">
+          <input type="file" id="video-file-input" multiple accept=".mp4" style="display: none;" onchange="handleFileSelect(event)">
+          <div class="drop-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <div class="drop-text-main">点击或拖拽多个 MP4 视频到此处</div>
+          <div class="drop-text-sub">自动提取音频、听悟转写、大模型总结、精准截帧并导出高质量 PDF 笔记</div>
+        </div>
+
+        <div id="file-preview-list" class="file-preview-list"></div>
+
+        <div style="margin-top: 16px; display: flex; justify-content: flex-end; gap: 10px;">
+          <button id="btn-clear-files" class="btn btn-secondary btn-sm" style="display: none;" onclick="clearSelectedFiles()">清空所选</button>
+          <button id="btn-submit-tasks" class="btn btn-primary" style="display: none;" onclick="submitTasks()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            开始批量总结
+          </button>
+        </div>
+      </div>
+
+      <!-- 任务执行与结果列表 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            处理进度与总结结果
+          </div>
+          <span class="card-badge" id="task-count-badge">0 个任务</span>
+        </div>
+
+        <div id="task-list-container" class="task-list">
+          <div class="empty-state">
+            <div class="empty-icon">☕</div>
+            <p>暂无任务记录，请在上方上传视频开始总结</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast-container"></div>
+
+  <script>
+    let selectedFiles = [];
+    let pollInterval = null;
+
+    // 初始化加载
+    window.addEventListener('DOMContentLoaded', () => {
+      loadConfig();
+      loadTasks();
+      // 定时轮询任务状态
+      pollInterval = setInterval(loadTasks, 3000);
+      setupDragDrop();
+    });
+
+    function showToast(msg) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerText = msg;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.transition = 'opacity 0.3s ease';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // ────────────────────── 配置处理 ──────────────────────
+
+    async function loadConfig() {
+      try {
+        const res = await fetch('/api/config');
+        if (!res.ok) return;
+        const data = await res.json();
+        const fields = [
+          'model_name', 'api_key', 'base_url', 'oss_ak', 'oss_sk',
+          'bucket_name', 'region', 'markdown_file_path', 'tingwu_ak',
+          'tingwu_sk', 'tingwu_appkey'
+        ];
+        fields.forEach(k => {
+          const el = document.getElementById(k);
+          if (el && data[k] !== undefined) {
+            el.value = data[k];
+          }
+        });
+      } catch (e) {
+        console.error('加载配置失败:', e);
+      }
+    }
+
+    async function handleSaveConfig(e) {
+      e.preventDefault();
+      const config = {
+        model_name: document.getElementById('model_name').value.trim(),
+        api_key: document.getElementById('api_key').value.trim(),
+        base_url: document.getElementById('base_url').value.trim(),
+        oss_ak: document.getElementById('oss_ak').value.trim(),
+        oss_sk: document.getElementById('oss_sk').value.trim(),
+        bucket_name: document.getElementById('bucket_name').value.trim(),
+        region: document.getElementById('region').value.trim(),
+        markdown_file_path: document.getElementById('markdown_file_path').value.trim(),
+        tingwu_ak: document.getElementById('tingwu_ak').value.trim(),
+        tingwu_sk: document.getElementById('tingwu_sk').value.trim(),
+        tingwu_appkey: document.getElementById('tingwu_appkey').value.trim(),
+      };
+
+      try {
+        const res = await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(config)
+        });
+        const result = await res.json();
+        if (result.ok) {
+          showToast('✓ 配置已保存并即时生效');
+        } else {
+          showToast('保存失败: ' + (result.error || '未知错误'));
+        }
+      } catch (err) {
+        showToast('请求出错: ' + err.message);
+      }
+    }
+
+    // ────────────────────── 文件选择与拖拽 ──────────────────────
+
+    function triggerFileInput() {
+      document.getElementById('video-file-input').click();
+    }
+
+    function setupDragDrop() {
+      const dropZone = document.getElementById('drop-zone');
+      ['dragenter', 'dragover'].forEach(name => {
+        dropZone.addEventListener(name, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.classList.add('dragover');
+        });
+      });
+      ['dragleave', 'drop'].forEach(name => {
+        dropZone.addEventListener(name, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.classList.remove('dragover');
+        });
+      });
+      dropZone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = Array.from(dt.files).filter(f => f.name.toLowerCase().endsWith('.mp4'));
+        if (files.length > 0) {
+          addSelectedFiles(files);
+        } else {
+          showToast('请上传 .mp4 格式的视频文件');
+        }
+      });
+    }
+
+    function handleFileSelect(e) {
+      const files = Array.from(e.target.files).filter(f => f.name.toLowerCase().endsWith('.mp4'));
+      addSelectedFiles(files);
+      e.target.value = '';
+    }
+
+    function addSelectedFiles(newFiles) {
+      newFiles.forEach(file => {
+        if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+          selectedFiles.push(file);
+        }
+      });
+      renderFilePreview();
+    }
+
+    function removeSelectedFile(index) {
+      selectedFiles.splice(index, 1);
+      renderFilePreview();
+    }
+
+    function clearSelectedFiles() {
+      selectedFiles = [];
+      renderFilePreview();
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function renderFilePreview() {
+      const listEl = document.getElementById('file-preview-list');
+      const submitBtn = document.getElementById('btn-submit-tasks');
+      const clearBtn = document.getElementById('btn-clear-files');
+
+      if (selectedFiles.length === 0) {
+        listEl.innerHTML = '';
+        submitBtn.style.display = 'none';
+        clearBtn.style.display = 'none';
+        return;
+      }
+
+      submitBtn.style.display = 'inline-flex';
+      clearBtn.style.display = 'inline-flex';
+
+      listEl.innerHTML = selectedFiles.map((f, i) => `
+        <div class="file-chip">
+          <div class="file-info">
+            <svg class="file-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg>
+            <span class="file-name" title="${f.name}">${f.name}</span>
+            <span class="file-size">${formatFileSize(f.size)}</span>
+          </div>
+          <span class="file-remove" onclick="removeSelectedFile(${i})" title="移除">✕</span>
+        </div>
+      `).join('');
+    }
+
+    // ────────────────────── 任务提交与监控 ──────────────────────
+
+    async function submitTasks() {
+      if (selectedFiles.length === 0) return;
+
+      const submitBtn = document.getElementById('btn-submit-tasks');
+      submitBtn.disabled = true;
+      submitBtn.innerText = '正在上传...';
+
+      const formData = new FormData();
+      selectedFiles.forEach(file => {
+        formData.append('videos', file);
+      });
+
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showToast(`✓ 已成功创建 ${data.tasks.length} 个视频总结任务`);
+          clearSelectedFiles();
+          loadTasks();
+        } else {
+          showToast('任务提交失败: ' + (data.error || '未知错误'));
+        }
+      } catch (err) {
+        showToast('网络错误: ' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          开始批量总结
+        `;
+      }
+    }
+
+    async function loadTasks() {
+      try {
+        const res = await fetch('/api/tasks');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data.ok) return;
+
+        const tasks = data.tasks || [];
+        document.getElementById('task-count-badge').innerText = `${tasks.length} 个任务`;
+
+        const container = document.getElementById('task-list-container');
+        if (tasks.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">☕</div>
+              <p>暂无任务记录，请在上方上传视频开始总结</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = tasks.map(t => {
+          let badgeHtml = '';
+          let actionHtml = '';
+
+          if (t.status === 'processing') {
+            badgeHtml = `<span class="task-badge status-processing"><span class="pulse-dot"></span>处理中 (${t.elapsed}s)</span>`;
+            actionHtml = `<button class="btn btn-secondary btn-sm" onclick="cancelTask('${t.id}')">取消任务</button>`;
+          } else if (t.status === 'completed') {
+            badgeHtml = `<span class="task-badge status-completed">✓ 完成 (耗时 ${t.elapsed}s)</span>`;
+            actionHtml = `
+              <a class="btn btn-primary btn-sm" href="/api/tasks/${t.id}/download" target="_blank">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                下载 PDF 笔记
+              </a>
+              <button class="btn btn-secondary btn-sm" onclick="deleteTask('${t.id}')">移除</button>
+            `;
+          } else if (t.status === 'error') {
+            badgeHtml = `<span class="task-badge status-error">✕ 失败</span>`;
+            actionHtml = `<button class="btn btn-secondary btn-sm" onclick="deleteTask('${t.id}')">移除</button>`;
+          } else if (t.status === 'cancelled') {
+            badgeHtml = `<span class="task-badge status-cancelled">已取消</span>`;
+            actionHtml = `<button class="btn btn-secondary btn-sm" onclick="deleteTask('${t.id}')">移除</button>`;
+          }
+
+          let extraInfo = '';
+          if (t.error) {
+            extraInfo = `<div style="font-size: 11px; color: var(--accent-red); background: #FEF2F2; padding: 6px 10px; border-radius: 4px; word-break: break-all;">${t.error}</div>`;
+          } else if (t.result) {
+            extraInfo = `<div style="font-size: 11px; color: var(--text-muted); background: var(--surface-subtle); padding: 4px 8px; border-radius: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">输出路径: ${t.result}</div>`;
+          }
+
+          return `
+            <div class="task-item">
+              <div class="task-header">
+                <div class="task-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg>
+                  <span>${t.file_name}</span>
+                </div>
+                ${badgeHtml}
+              </div>
+              ${extraInfo}
+              <div class="task-footer">
+                <span>任务 ID: ${t.id}</span>
+                <div class="task-actions">${actionHtml}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error('获取任务状态失败:', err);
+      }
+    }
+
+    async function cancelTask(id) {
+      try {
+        const res = await fetch(`/api/tasks/${id}/cancel`, { method: 'POST' });
+        const data = await res.json();
+        if (data.ok) {
+          showToast('已取消任务');
+          loadTasks();
+        }
+      } catch (e) {
+        showToast('取消失败: ' + e.message);
+      }
+    }
+
+    async function deleteTask(id) {
+      try {
+        const res = await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.ok) {
+          loadTasks();
+        }
+      } catch (e) {
+        showToast('移除失败: ' + e.message);
+      }
+    }
+  </script>
+</body>
+</html>
