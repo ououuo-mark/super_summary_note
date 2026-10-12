@@ -17,11 +17,6 @@ echo.
 
 start /B "" "%PYTHON_EXE%" "%SCRIPT_DIR%web_server.py"
 
-timeout /t 3 /nobreak >nul
-
-echo Opening browser...
-start http://127.0.0.1:8000/
-
 echo.
 echo Server is running. Close this window to stop the server.
 echo.

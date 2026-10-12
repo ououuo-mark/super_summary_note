@@ -9,7 +9,9 @@ import json
 import time
 import uuid
 import asyncio
+import threading
 import traceback
+import webbrowser
 import uvicorn
 from pathlib import Path
 from starlette.applications import Starlette
@@ -243,10 +245,18 @@ routes = [
 
 app = Starlette(routes=routes)
 
+def _open_browser(url, delay=1.5):
+    def _open():
+        time.sleep(delay)
+        webbrowser.open(url)
+    threading.Thread(target=_open, daemon=True).start()
+
 def run_server(host="127.0.0.1", port=8000):
+    url = f"http://{host}:{port}"
     print("=" * 60)
-    print(f"🚀 视频智能笔记服务已启动: http://{host}:{port}")
+    print(f"🚀 视频智能笔记服务已启动: {url}")
     print("=" * 60)
+    _open_browser(url)
     uvicorn.run(app, host=host, port=port)
 
 if __name__ == "__main__":
